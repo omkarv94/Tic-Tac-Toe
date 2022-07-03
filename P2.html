@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicTacToe - by Omkar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&display=swap" rel="stylesheet">
+</head>
+<style>
+    body{
+        color: blanchedalmond;
+        margin: 0px;
+        padding: 0px;
+        background-image: url('Img/ttt.jpg');   
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    .heading{
+        /* border: 2px solid blanchedalmond; */
+        margin: 0px;
+        font-size: 74px;
+        text-align: center;
+        padding: 0px 0px;
+        font-family: 'Mochiy Pop P One', sans-serif;
+        color:rgb(122, 240, 11);
+        /* text-decoration: underline; */
+        position: relative;
+        top: 20px;
+    }
+    .container{
+        display: grid;
+        grid-template-rows: 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
+        height: 60vh;
+        width: 37vw;
+        margin: 50px auto;
+        position: relative;
+        top: 35px;
+    }
+    .box{
+        background-color: lightgray ;
+        border: 2px solid white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+    /* .box.x{
+        background-color: red; 
+    } */
+    :root{
+        --cell-size: 100px;
+        --mark-size: calc(var(--cell-size)*0.9);
+    }
+    .box.x,
+    .box.o{
+        cursor: not-allowed;
+    }
+
+    .container.x .box:not(.x):not(.o):hover::after,
+    .container.x .box:not(.x):not(.o):hover::before{
+        content: '';
+        position: absolute;
+        width: calc(var(--mark-size)*0.15);
+        height: var(--mark-size);
+        background-color: rgb(179, 173, 173) ;
+    }
+    .container.x .box:hover::before{
+        transform: rotate(-45deg);
+    }
+    .container.x .box:hover::after{
+        transform: rotate(45deg);
+    }
+    .box.x::before,
+    .box.x::after{
+        content: '';
+        position: absolute;
+        width: calc(var(--mark-size)*0.15);
+        height: var(--mark-size);
+        background-color: black ;
+    }
+    .box.box.x::before{
+        transform: rotate(-45deg);
+    }
+    .box.box.x::after{
+        transform: rotate(45deg);
+    }
+
+    .container.o .box:not(.x):not(.o):hover::after,
+    .container.o .box:not(.x):not(.o):hover::before{
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        /* background-color: black ; */
+    }
+    .container.o .box:not(.x):not(.o):hover::after{
+        width: calc(var(--mark-size)*0.75);
+        height: calc(var(--mark-size)*0.75);
+        background-color: lightgray;
+    }
+    .container.o .box:not(.x):not(.o):hover::before{
+        width: var(--mark-size);
+        height: var(--mark-size);
+        background-color: rgb(179, 173, 173);
+    }
+
+    .box.o::before,
+    .box.o::after{
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        background-color: black ;
+    }
+    .box.o::after{
+        width: calc(var(--mark-size)*0.75);
+        height: calc(var(--mark-size)*0.75);
+        background-color: lightgray;
+    }
+    .box.o::before{
+        width: var(--mark-size);
+        height: var(--mark-size);
+        background-color: black;
+    }
+
+    .WinningMessage{
+        display: none;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        /* display: flex; */
+        justify-content: center;
+        align-items: center;
+        font-size: 4.5rem;
+        flex-direction: column;
+    }
+    .WinningMessage button{
+        font-size: 2.5rem;
+        padding: 15px 15px;
+        border-radius: 20px;
+        border: 5px solid black ;
+        cursor: pointer;
+    }
+    .WinningMessage button:hover{
+        background-color: black;
+        border-color: gray;
+        background-color: white;
+
+    }
+
+    .WinningMessage.show{
+        display: flex;
+    }
+
+    #RestartButton{
+        margin: 30px 0px;
+    }
+    #Win{
+        color: chartreuse;
+        font-family: 'Mochiy Pop P One', sans-serif;
+    }
+    .hr{
+        position: relative;
+        top: 15px;
+    }
+</style>
+
+<body>
+    <div class="heading">Welcome to the game</div>
+    <hr class="hr">
+    <div class="container" id="container">
+        <div class="box" data-box></div>
+        <div class="box" data-box></div>
+        <div class="box" data-box></div>
+        <div class="box" data-box></div>
+        <div class="box" data-box></div>
+        <div class="box" data-box></div>
+        <div class="box" data-box></div>
+        <div class="box" data-box></div>
+        <div class="box"data-box></div>
+    </div>
+    <div class="WinningMessage" id="WinningMessage">
+        <div id="Win" data-winning-message-text></div>
+        <button id="RestartButton">RESTART</button>
+    </div>
+
+    <script>
+        const x_class = 'x';
+        const o_class = 'o';
+        let circleTurn;
+        const container= document.getElementById('container');
+        let boxElements = document.querySelectorAll('[data-box]');
+        // console.log(boxElements);
+        // boxElements = [...boxElements];
+        // console.log(boxElements);
+        const Winning_Combination = [[0,1,2],  [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+        const WinningMessageTextElement = document.querySelector('[data-winning-message-text]');
+        const WinningMessageElement = document.getElementById('WinningMessage');
+        const Restartbutton = document.getElementById('RestartButton');
+
+        function startgame(){
+                boxElements.forEach(box => {
+                box.addEventListener('click', handleClick, {once: true})
+            })
+            SetHoverCLass();
+        }
+        startgame();
+
+        function RESTART(){
+            boxElements.forEach(box => {
+                box.classList.remove(x_class);
+                box.classList.remove(o_class);
+                box.removeEventListener('click', handleClick);
+            })
+            WinningMessageElement.classList.remove('show');
+            startgame();  
+        }
+        
+        Restartbutton.addEventListener('click', RESTART);
+        
+        function handleClick(e){
+            let curr;
+            let box = e.target;   
+            if(circleTurn){
+                curr= o_class;
+            }
+            else{
+                curr= x_class;
+            }
+            // console.log('Clicked');
+            PlaceMark(box, curr);
+            //Check for Win
+            if(CheckWin(curr)){
+                // console.log("Winner")
+                //End game
+                Endgame(false);
+            }
+            else if(isDraw()){
+                Endgame(true);
+            }
+            else{
+                //Check for draw
+                SwitchTurn();
+                
+                //For Hover 
+                SetHoverCLass();
+            }
+        }
+
+        function Endgame(draw){
+            if(draw){
+                WinningMessageTextElement.innerText = "It's a Draw !"; 
+            }
+            else{
+                if(circleTurn){
+                    WinningMessageTextElement.innerText = "O's Player Wins !";
+                }
+                else{
+                    WinningMessageTextElement.innerText = "X's Player Wins !";
+                }
+            }
+            WinningMessageElement.classList.add('show');
+        }
+
+        function SetHoverCLass(){
+            container.classList.remove(x_class);
+            container.classList.remove(o_class);
+            if(circleTurn){
+                container.classList.add(o_class);
+            }
+            else{
+                container.classList.add(x_class);
+            }
+
+        }
+
+        function PlaceMark(box, curr){
+            box.classList.add(curr);
+        }
+
+        function SwitchTurn(){
+            circleTurn = !circleTurn;
+        }
+
+        function CheckWin(curr){
+            return Winning_Combination.some(combination => {
+                return combination.every(index =>{
+                    return boxElements[index].classList.contains(curr);
+                })
+            })
+        }
+
+        function isDraw(){
+            return [...boxElements].every(box => {
+                return box.classList.contains(x_class) || box.classList.contains(o_class);
+            })
+        }
+    </script>
+</body>
+</html>
